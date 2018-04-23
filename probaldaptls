@@ -1,0 +1,25 @@
+TLSCACertificateFile /etc/openldap/certs/cacert.pem
+TLSCertificateFile /etc/openldap/certs/servercert.pem
+TLSCertificateKeyFile /etc/openldap/certs/serverkey.pem
+TLSVerifyClient never
+TLSCipherSuite HIGH:MEDIUM:LOW:+SSLLv2
+
+rm -rf /var/lib/ldap/*
+rm -rf /etc/openldap/slapd.d/*
+cp DB_CONFIG /var/lib/ldap/.
+slaptest -f slapd-edt.org.conf -F /etc/openldap/slapd.d/
+slaptest -f slapd-edt.org.conf -F /etc/openldap/slapd.d/ -u
+slapadd -F /etc/openldap/slapd.d/ -l organitzacio_edt.org.ldif
+slapadd -F /etc/openldap/slapd.d/ -l usuaris_edt.org.ldif
+chown -R ldap.ldap /var/lib/ldap/
+chown -R ldap.ldap /etc/openldap/slapd.d/
+
+ldapsearch -x -LLL -H ldaps://ldapserver -s base
+ldapsearch -x -LLL -ZZ -H ldap://ldapserver -s base
+
+openssl verify -CAfile cacert.pem servercert.pem
+
+
+BASE dc=edt,dc=org
+
+URI ldap://ldapserver ldaps://ldapserver
